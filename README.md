@@ -1,6 +1,6 @@
 # Daily Attendance List for an Online Quran Circle: An AI-assisted automation
 
-> **Status: trial, since 19 November 2026.** Used daily by one volunteer preparer. The accuracy test against past lists is in progress; results below are updated as the trial runs.
+> **Status: Trial, since 19 November 2026.** Used daily by one volunteer preparer, potential adoption by other volunteers in the future. The accuracy test against past lists is in progress; results below are updated as the trial runs.
 
 ## The problem
 An online Quran memorisation circle of 65 students meets on Zoom five days a week. Before each class, one volunteer, chosen by rotation, builds the order of recitation by hand from the group's WhatsApp chat:
