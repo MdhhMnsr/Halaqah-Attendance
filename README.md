@@ -45,10 +45,10 @@ WhatsApp export (.zip)
 | Measure | Value |
 |---|---|
 | Agreement with a careful manual reading (first live day) | 28 of 29 messages; the one difference was the tool being right |
-| Cost | about 4 US cents a run |
+| Cost | About 4 US cents a run |
 | In daily use since | 19 November 2026 |
-| Accuracy against the lists volunteers posted (Jul–Nov 2026) | being measured |
-| Time saved per day | being measured |
+| Accuracy against the lists volunteers posted (Jul–Nov 2026) | Being measured |
+| Time saved per day | Being measured |
 
 ## What I learned
 - **The edge cases came from real use, not from planning.** Two exports of the same chat gave the same message different times (9:59 vs 10:00:01), which decided whether a student was on time. A list posted early for the next day was picked up as "yesterday's final list". The group's rule that a student is carried forward only once came out in the first review.
