@@ -11,3 +11,6 @@ logs/
 WRITEUP-draft.md
 
 __pycache__/
+
+# Built by make_space_folder.py for uploading to Hugging Face
+space_upload/

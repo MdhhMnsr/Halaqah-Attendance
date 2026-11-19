@@ -26,7 +26,8 @@ WhatsApp export (.zip)
    ├─ posted_list.py   yesterday's ticked list → who is carried forward
    ├─ reader.py        Claude labels today's messages   ← the only AI step
    ├─ build_list.py    window, order, duplicates, sections
-   └─ make_list.py     runs it all, saves the list, logs the run
+   ├─ make_list.py     runs it all, saves the list, logs the run
+   └─ app.py           the same, as a password-protected web page
 ```
 
 ## Engineering standards
@@ -58,7 +59,16 @@ WhatsApp export (.zip)
 ## Next
 - Score the tool against every past list and publish the accuracy.
 - Compare a smaller, cheaper model on the same test (accuracy vs cost).
-- Let other volunteers run it without a laptop setup.
+- Let other volunteers run it without a laptop setup. *(Version 1 built: a password-protected web page, see below.)*
+
+## Web page for volunteers (version 1)
+`app.py` is a [Gradio](https://www.gradio.app/) page for a Hugging Face Space: a volunteer uploads the WhatsApp export from her own phone and gets the list with a Copy button. No Python or API key needed on her side.
+- **Password-protected:** the page and its API refuse every request without the circle's password, and the page will not start if no password is set.
+- **Nothing kept:** the uploaded export is read in memory and deleted straight away; the logs hold counts only.
+- **Cost guard:** a daily cap on runs, on top of a spend limit on the API key.
+- **Any phone:** exports are read whatever the phone's date and time format (day/month or month/day, 24-hour or am/pm).
+
+`python make_space_folder.py` gathers the files the Space needs; the API key and password are set as Space secrets, never in the code.
 
 ## Run it
 Python 3.10+.
