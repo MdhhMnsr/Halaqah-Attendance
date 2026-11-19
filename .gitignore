@@ -1,0 +1,13 @@
+# The sisters' messages, names and phone numbers never leave this computer
+data/
+output/
+logs/
+*.zip
+
+# Secrets
+.env
+
+# Working draft with blanks (README.md is the public version)
+WRITEUP-draft.md
+
+__pycache__/

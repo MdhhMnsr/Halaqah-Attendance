@@ -1,0 +1,12 @@
+[
+ {"message_number": 1, "kind": "attending", "name_arabic": "سلمى", "carried_name": "سلمى", "note": "Arabic attendance card"},
+ {"message_number": 2, "kind": "attending", "name_arabic": "يسرى", "carried_name": "", "note": "says present"},
+ {"message_number": 3, "kind": "attending", "name_arabic": "دينا", "carried_name": "", "note": "English attendance card"},
+ {"message_number": 4, "kind": "listener", "name_arabic": "بسمة", "carried_name": "", "note": "مستمعة = listener"},
+ {"message_number": 5, "kind": "attending", "name_arabic": "آية", "carried_name": "آية", "note": "sent by Jana on Aya's behalf"},
+ {"message_number": 6, "kind": "not_attendance", "name_arabic": "", "carried_name": "", "note": "admin thanks"},
+ {"message_number": 7, "kind": "attending", "name_arabic": "يسرى", "carried_name": "", "note": "second message from Yusra"},
+ {"message_number": 8, "kind": "new_student", "name_arabic": "هدى", "carried_name": "", "note": "says new student"},
+ {"message_number": 9, "kind": "apology_absent", "name_arabic": "وفاء", "carried_name": "", "note": "apologises, absent"},
+ {"message_number": 10, "kind": "attending", "name_arabic": "لينا", "carried_name": "", "note": "bare name, after 10:30"}
+]
