@@ -1,4 +1,4 @@
-# Daily Attendance List for an Online Quran Circle: an AI-assisted automation
+# Daily Attendance List for an Online Quran Circle: An AI-assisted automation
 
 > **Status: trial, since 19 November 2026.** Used daily by one volunteer preparer. The accuracy test against past lists is in progress; results below are updated as the trial runs.
 
