@@ -5,10 +5,10 @@
 ## The problem
 An online Quran memorisation circle of 65 students meets on Zoom five days a week. Before each class, one volunteer, chosen by rotation, builds the order of recitation by hand from the group's WhatsApp chat:
 
-- read 30–60 attendance messages posted in a 30-minute window, written in English and Arabic, some by Urdu speakers, in many formats (an Arabic attendance card, an English card, a bare name, "X present" sent by someone else);
-- carry forward yesterday's students who were not reached, and put them first;
-- remove duplicates, and sort the rest into Today, Late, Listeners and New Students;
-- write every name in Arabic, then repost the whole list about 4 times as more messages come in.
+- Read 30–60 attendance messages posted in a 30-minute window, written in English and Arabic, some by Urdu speakers, in many formats (an Arabic attendance card, an English card, a bare name, "X present" sent by someone else);
+- Carry forward yesterday's students who were not reached, and put them first;
+- Remove duplicates, and sort the rest into Today, Late, Listeners and New Students;
+- Write every name in Arabic, then repost the whole list about 4 times as more messages come in.
 
 Errors were common because it was done in a hurry just before class. Examples from one day's list: a student listed twice, late arrivals and a listener left out of their sections.
 
@@ -30,10 +30,10 @@ WhatsApp export (.zip)
 ```
 
 ## Engineering standards
-- **Logging:** every run is recorded (date, messages read, count per section, run time). Claude's reading of each message is saved with a short reason, so any placement can be traced back to its message.
-- **Error handling:** clear messages for an expired key or a refused answer; a warning if yesterday's list has no ticks; the tool prints which list it used for the carry-forward.
-- **API cost tracking:** tokens are printed on every run. About 4 US cents a run (≈ $0.80 a month), with a separate API key so the cost is visible on its own. Re-runs on the same day only send new messages.
-- **Tests:** the rules are tested on a made-up sample chat (`tests/test_rules.py`), with no API key needed.
+- **Logging:** Every run is recorded (date, messages read, count per section, run time). Claude's reading of each message is saved with a short reason, so any placement can be traced back to its message.
+- **Error handling:** Clear messages for an expired key or a refused answer; a warning if yesterday's list has no ticks; the tool prints which list it used for the carry-forward.
+- **API cost tracking:** Tokens are printed on every run. About 4 US cents a run (≈ $0.80 a month), with a separate API key so the cost is visible on its own. Re-runs on the same day only send new messages.
+- **Tests:** The rules are tested on a made-up sample chat (`tests/test_rules.py`), with no API key needed.
 
 ## Privacy and security
 - **No real data in this repository.** Members' messages, names and phone numbers stay on the preparer's laptop; `data/`, `output/` and `logs/` are excluded from version control. The sample chat in `samples/` is invented.
