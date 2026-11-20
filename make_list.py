@@ -28,12 +28,27 @@ WINDOW_OPENS = "10:00"     # Madinah time; earlier messages are ignored
 ON_TIME_UNTIL = "10:30"    # after this, "Late"
 STOP_READING = "13:00"     # class is long over by now
 
+# Class runs Sunday to Thursday; Friday and Saturday are off days.
+# Python counts Monday=0 ... Sunday=6.
+CLASS_DAYS = {6, 0, 1, 2, 3}
+
 HERE = Path(__file__).parent
 
 
 def at(day: datetime, hhmm: str) -> datetime:
     h, m = map(int, hhmm.split(":"))
     return day.replace(hour=h, minute=m, second=0, microsecond=0)
+
+
+def is_class_day(day: datetime) -> bool:
+    return day.weekday() in CLASS_DAYS
+
+
+def next_class_day(day: datetime) -> datetime:
+    """The day itself if there is class, otherwise the next class day (Friday/Saturday -> Sunday)."""
+    while not is_class_day(day):
+        day += timedelta(days=1)
+    return day
 
 
 @dataclass
@@ -52,11 +67,16 @@ def make_day_list(chat_path: str, day: datetime, phone_utc: float, saved: dict |
     """
     started = time.time()
     notes: list[str] = []
+    if not is_class_day(day):
+        # Still allowed (handy for testing), but the preparer should know
+        notes.append(f"NOTE: {day:%A %d/%m} is an off day (class runs Sunday to Thursday). "
+                     f"The next class is {next_class_day(day):%A %d/%m}.")
     messages = parse_export(chat_path, phone_utc)
     for m in messages:
         m.time = m.time.astimezone(MADINAH)  # do all checking in Madinah time
 
-    # 1. Yesterday's final posted list -> carried names, and the header/footer to reuse
+    # 1. The last class day's final posted list -> carried names
+    #    (on Sunday that is Thursday's list: off days have no list, so nothing special is needed)
     before_today = [m for m in messages if m.time < at(day, "00:00") and m.sender and is_posted_list(m.text)]
     if not before_today:
         raise ValueError("No list from an earlier day was found in this export. Export more days of the chat.")
@@ -118,7 +138,7 @@ def make_day_list(chat_path: str, day: datetime, phone_utc: float, saved: dict |
     # 4. Plain code puts the list together
     times = {n: m.time for n, m in numbered}
     result = assemble(carried, readings, times, at(day, ON_TIME_UNTIL))
-    text = render(result, final, day)
+    text = render(result, day)
 
     stats = {
         "class_date": f"{day:%Y-%m-%d}",

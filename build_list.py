@@ -1,10 +1,13 @@
 """Put the list together from the carried names and Claude's readings. Plain code, no AI."""
 
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
+
+from hijridate import Gregorian
 
 from names import name_key
-from posted_list import PostedList
 from reader import ReadMessage
 
 ARABIC_DIGITS = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
@@ -71,41 +74,42 @@ def assemble(
     return day
 
 
-def render(day: DayList, template: PostedList, date: datetime) -> str:
-    """Write the list in the same layout the group already uses."""
-    header_lines = []
-    for line in template.header.split("\n"):
-        if line.startswith("🕋"):
-            line = f"🕋 {date:%d/%m/%Y}"
-        elif line.startswith("🗓"):
-            line = f"🗓️ {ARABIC_DAYS[date.weekday()]}"
-        header_lines.append(line)
+HIJRI_MONTHS = ["محرم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة",
+                "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"]
+TEMPLATE_FILE = Path(__file__).parent / "list_template.txt"
 
-    out = header_lines + ["", "💠 *من لم يقرأنَّ* 💠", ""]
-    for i, name in enumerate(day.carried, 1):
-        mark = " (موجودة)" if name in day.present_carried else ""
-        out.append(f"{i}. {name}{mark}")
 
-    out += ["", "🎀🌷القائمة الحضور 🌷🎀"]
-    number = 0
-    for name in day.today:
-        number += 1
-        out.append(f"{str(number).translate(ARABIC_DIGITS)}- {name}")
+def hijri_date(date: datetime) -> str:
+    """The Islamic (Umm al-Qura) date, written like the admins do: 8 جمادى الآخرة 1448 هـ"""
+    h = Gregorian(date.year, date.month, date.day).to_hijri()
+    return f"{h.day} {HIJRI_MONTHS[h.month - 1]} {h.year} هـ"
 
-    out += ["", "⏰⏰⏰⏰⏰⏰⏰⏰"]
-    for name in day.late:
-        number += 1
-        out.append(f"{str(number).translate(ARABIC_DIGITS)}- {name}")
 
-    out += ["", "🎧 المستمعات 🎧", *day.listeners]
-    out += ["", "🎀 طالبة جديدة 🎀", *day.new_students]
-    if template.footer:
-        out += ["", template.footer]
+def render(day: DayList, date: datetime) -> str:
+    """Fill the group's list template (list_template.txt) for the class date."""
+    numbered = [f"{i}. {name}{' (موجودة)' if name in day.present_carried else ''}"
+                for i, name in enumerate(day.carried, 1)]
+    today = [f"{str(i).translate(ARABIC_DIGITS)}- {name}" for i, name in enumerate(day.today, 1)]
+    late = [f"{str(i).translate(ARABIC_DIGITS)}- {name}"           # numbering carries on from Today
+            for i, name in enumerate(day.late, len(day.today) + 1)]
+
+    text = TEMPLATE_FILE.read_text(encoding="utf-8").strip()
+    for placeholder, value in {
+        "[HIJRI_DATE]": hijri_date(date),
+        "[DAY]": ARABIC_DAYS[date.weekday()],
+        "[TEACHER]": os.environ.get("TEACHER_NAME", "المعلمة"),   # kept out of the public code
+        "[DID_NOT_RECITE]": "\n".join(numbered),
+        "[TODAY]": "\n".join(today),
+        "[LATE]": "\n".join(late),
+        "[LISTENERS]": "\n".join(day.listeners),
+        "[NEW_STUDENTS]": "\n".join(day.new_students),
+    }.items():
+        text = text.replace(placeholder, value)
 
     # A line that starts with a number, emoji or English name would show left-to-right.
     # An invisible right-to-left mark at the start of each line makes every line RTL in WhatsApp.
     RLM = "‏"
-    return "\n".join(RLM + line if line else line for line in "\n".join(out).split("\n"))
+    return "\n".join(RLM + line if line else line for line in text.split("\n"))
 
 
 def render_preview_html(list_text: str) -> str:

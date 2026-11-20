@@ -21,11 +21,14 @@ NUMBERING = re.compile(rf"^[\s{DIGITS}]+[\s.\-–)]*")
 # Anything after the name: marks, emojis, "(present)" notes
 MARK_START = re.compile(r"[(（/✅❌🎀🎁🍊✔☑]|حاضر|موجود")
 
+# An admin's note that the student has left (the group or the circle): "left", "غادرت"
+LEFT_NOTE = re.compile(r"\bleft\b|غادرت", re.IGNORECASE)
+
 
 @dataclass
 class Entry:
-    name: str     # the name as written, marks removed
-    status: str   # "recited" (✅), "crossed" (❌) or "none"
+    name: str     # the name as written, marks and notes removed
+    status: str   # "recited" (✅), "crossed" (❌), "left" (marked as left) or "none"
 
 
 @dataclass
@@ -60,11 +63,14 @@ def _section_of(line: str) -> str | None:
 
 def _entry_from(line: str) -> Entry | None:
     status = "recited" if "✅" in line else "crossed" if "❌" in line else "none"
-    name = NUMBERING.sub("", line)
+    if LEFT_NOTE.search(line):
+        status = "left"
+        line = LEFT_NOTE.sub("", line)
+    name = NUMBERING.sub("", line.lstrip("‎‏"))
     cut = MARK_START.search(name)
     if cut:
         name = name[: cut.start()]
-    name = name.strip(" *_\t.-")
+    name = name.strip(" *_\t.-۔")   # ۔ is the Urdu full stop some admins type before a name
     return Entry(name, status) if name else None
 
 
@@ -105,7 +111,8 @@ def carry_forward(final_list: PostedList) -> list[str]:
     Rules agreed with the group:
       - a name is carried forward only ONCE: anyone already in "did not recite"
         is dropped tomorrow, reached or not
-      - from "today": ✅ recited -> dropped, ❌ crossed out -> dropped, no mark -> carried
+      - from "today": ✅ recited -> dropped, ❌ crossed out -> dropped,
+        marked "left" -> dropped, no mark -> carried
       - late, listeners, new students -> never carried
     """
     from names import same_person  # local import keeps the modules independent

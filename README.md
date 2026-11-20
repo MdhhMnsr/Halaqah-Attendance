@@ -3,10 +3,10 @@
 > **Status: Trial, since 19 November 2026.** Used daily by one volunteer preparer, potential adoption by other volunteers in the future. The accuracy test against past lists is in progress; results below are updated as the trial runs.
 
 ## The problem
-An online Quran memorisation circle of 65 students meets on Zoom five days a week. Before each class, one volunteer, chosen by rotation, builds the order of recitation by hand from the group's WhatsApp chat:
+An online Quran memorisation circle of 65 students meets on Zoom five days a week, **Sunday to Thursday** at 10:30 Madinah time (Friday and Saturday are off days). Before each class, one volunteer, chosen by rotation, builds the order of recitation by hand from the group's WhatsApp chat:
 
 - Read 30–60 attendance messages posted in a 30-minute window, written in English and Arabic, some by Urdu speakers, in many formats (an Arabic attendance card, an English card, a bare name, "X present" sent by someone else);
-- Carry forward yesterday's students who were not reached, and put them first;
+- Carry forward the students from the last class who were not reached (on Sunday, from Thursday's list), and put them first;
 - Remove duplicates, and sort the rest into Today, Late, Listeners and New Students;
 - Write every name in Arabic, then repost the whole list about 4 times as more messages come in.
 
@@ -18,6 +18,12 @@ A Python tool that turns a WhatsApp Desktop export into the finished list in the
 **Design decision: the AI does only the part that needs judgement.**
 - **Claude** reads the messages: who is attending, listening, new or absent, and each person's name in Arabic, spelled the way the group already writes it. The answers are returned in a fixed shape (structured output), so a malformed answer stops the run instead of producing a wrong list.
 - **Plain code** does everything with an exact rule: the time window (Madinah time, whatever time zone the export came from), the carry-forward rules, ordering, removing duplicates and formatting. These parts are deterministic and tested separately.
+
+**The group's rules, as coded:**
+- Class days are Sunday to Thursday. A list for a Friday or Saturday still builds (useful for testing) but is flagged as an off day, and the web page suggests the next class day.
+- Attendance messages count from 10:00 Madinah time; after 10:30 they are Late; earlier ones are ignored.
+- A student is carried forward only once: from the last class's list, unmarked names in Today's list are carried; ✅ (recited), ❌ (called, no answer) and names an admin marked "left" are dropped; Late, Listeners and New Students are never carried.
+- The list uses the group's own template (`list_template.txt`) with the Islamic (Umm al-Qura) date and the day name of the class.
 
 ```
 WhatsApp export (.zip)

@@ -36,6 +36,20 @@ def test_same_person_ignores_spelling_variants():
     assert not same_person("سلمى", "سلمان")
 
 
+def test_class_days_are_sunday_to_thursday():
+    from make_list import is_class_day, next_class_day
+    friday, saturday, sunday = (datetime(2026, 11, d, tzinfo=MADINAH) for d in (20, 21, 22))
+    assert not is_class_day(friday) and not is_class_day(saturday)
+    assert is_class_day(sunday) and is_class_day(datetime(2026, 11, 19, tzinfo=MADINAH))  # Thursday
+    assert next_class_day(friday) == sunday and next_class_day(sunday) == sunday
+
+
+def test_hijri_date_matches_the_admins_list():
+    from build_list import hijri_date
+    # The admins' own list for Wednesday 16/09/2026 said: 5 ربيع الآخر 1448 هـ
+    assert hijri_date(datetime(2026, 9, 16)) == "5 ربيع الآخر 1448 هـ"
+
+
 def test_parses_desktop_format_with_multiline_messages():
     messages = load_sample()
     assert len(messages) == 12                       # 1 list + 11 messages; the notice line is skipped
@@ -47,7 +61,7 @@ def test_parses_desktop_format_with_multiline_messages():
 def test_carry_forward_rules():
     final = parse_posted_list(next(m.text for m in load_sample() if is_posted_list(m.text)))
     # Did-not-recite names are carried only once -> لينا and هدى are dropped.
-    # ✅ dropped, سلمى written twice counts once, late (جنى) and listeners are never carried.
+    # ✅ dropped, "غدير left" dropped, سلمى written twice counts once, late (جنى) and listeners never carried.
     assert carry_forward(final) == ["سلمى", "آية"]
 
 

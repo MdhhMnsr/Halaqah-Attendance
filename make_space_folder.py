@@ -11,7 +11,7 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 OUT = HERE / "space_upload"
-CODE = ["app.py", "make_list.py", "parse_chat.py", "posted_list.py", "names.py", "reader.py", "build_list.py"]
+CODE = ["app.py", "list_template.txt", "make_list.py", "parse_chat.py", "posted_list.py", "names.py", "reader.py", "build_list.py"]
 
 if OUT.exists():
     shutil.rmtree(OUT)

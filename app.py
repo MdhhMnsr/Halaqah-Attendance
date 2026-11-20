@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 
 import gradio as gr
 
-from make_list import MADINAH, load_env_file, make_day_list
+from make_list import MADINAH, load_env_file, make_day_list, next_class_day
 
 load_env_file()  # local testing only; on the Space the secrets are already set
 
@@ -41,6 +41,11 @@ runs_today = {"date": "", "count": 0}
 
 def today_in_madinah() -> str:
     return datetime.now(MADINAH).strftime("%d/%m/%Y")
+
+
+def next_class_date() -> str:
+    """Today if it is a class day, otherwise the next one (Friday/Saturday -> Sunday)."""
+    return next_class_day(datetime.now(MADINAH)).strftime("%d/%m/%Y")
 
 
 def make_list(upload_path, date_text, tz_label):
@@ -83,13 +88,14 @@ def make_list(upload_path, date_text, tz_label):
 with gr.Blocks(title="Halaqah attendance list", delete_cache=(3600, 3600)) as demo:
     gr.Markdown(
         "## Halaqah attendance list\n"
+        "Class runs **Sunday to Thursday** (Friday and Saturday are off days).\n\n"
         "1. In WhatsApp, export the group chat **without media**.\n"
         "2. Upload the file, check the date and your time zone, and press **Make the list**.\n"
         "3. Copy the list and check it before posting it in the group."
     )
     upload = gr.File(label="WhatsApp export (.zip or .txt)", file_types=[".zip", ".txt"], type="filepath")
     with gr.Row():
-        date_box = gr.Textbox(label="Class date (dd/mm/yyyy, Madinah)", value=today_in_madinah)
+        date_box = gr.Textbox(label="Class date (dd/mm/yyyy, Madinah)", value=next_class_date)
         tz = gr.Dropdown(label="Time zone of the phone/laptop that made the export",
                          choices=list(TIMEZONES), value=list(TIMEZONES)[0])
     go = gr.Button("Make the list", variant="primary")
