@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from build_list import assemble, render, render_preview_html
+from clipboard import copy_to_clipboard
 from names import name_key
 from parse_chat import parse_export
 from posted_list import carry_forward, is_posted_list, parse_posted_list
@@ -189,6 +190,8 @@ def main() -> None:
     out_file.with_suffix(".html").write_text(render_preview_html(result.text), encoding="utf-8")
     print(result.text)
     print(f"\nSaved to {out_file}")
+    if copy_to_clipboard(result.text):
+        print("Copied to the clipboard: paste it straight into WhatsApp (Ctrl+V).")
 
     # Log the run: counts only
     log = HERE / "logs" / "runs.jsonl"
