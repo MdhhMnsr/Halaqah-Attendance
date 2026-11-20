@@ -13,9 +13,11 @@ HERE = Path(__file__).parent
 OUT = HERE / "space_upload"
 CODE = ["app.py", "list_template.txt", "make_list.py", "parse_chat.py", "posted_list.py", "names.py", "reader.py", "build_list.py"]
 
-if OUT.exists():
-    shutil.rmtree(OUT)
-OUT.mkdir()
+# Empty the folder rather than deleting it: Windows refuses to delete a folder that is
+# open in File Explorer (or being synced by OneDrive).
+OUT.mkdir(exist_ok=True)
+for old in OUT.iterdir():
+    shutil.rmtree(old) if old.is_dir() else old.unlink()
 for name in CODE:
     shutil.copy(HERE / name, OUT / name)
 shutil.copy(HERE / "space" / "README.md", OUT / "README.md")            # the Space's settings header
