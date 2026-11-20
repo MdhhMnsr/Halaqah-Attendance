@@ -1,8 +1,9 @@
 """Web page for preparers: upload a WhatsApp export, get the day's list.
 
-Runs on a Hugging Face Space (Gradio). Settings come from the Space's secrets:
-    ANTHROPIC_API_KEY   the API key (a Secret, never a Variable)
+Runs on Google Cloud Run (see Dockerfile). Settings come from Secret Manager:
+    ANTHROPIC_API_KEY   the API key
     APP_PASSWORD        the password preparers type to open the page
+    TEACHER_NAME        shown on the list
     MAX_RUNS_PER_DAY    optional, default 15: stops runaway use of the key
 
 Privacy: the uploaded export is read in memory and its file deleted straight away.
@@ -139,4 +140,8 @@ with gr.Blocks(title="Halaqah attendance list", delete_cache=(3600, 3600)) as de
 
 
 if __name__ == "__main__":
-    demo.launch(auth=("halaqah", PASSWORD), max_file_size="10mb", ssr_mode=False)
+    demo.launch(
+        auth=("halaqah", PASSWORD), max_file_size="10mb", ssr_mode=False,
+        server_name="0.0.0.0",                              # reachable inside a container
+        server_port=int(os.environ.get("PORT", "7860")),    # Cloud Run sets $PORT
+    )

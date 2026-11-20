@@ -1,0 +1,10 @@
+# Never send private data or secrets into the container build
+.env
+data/
+output/
+logs/
+*.zip
+space_upload/
+WRITEUP-draft.md
+.git/
+__pycache__/
