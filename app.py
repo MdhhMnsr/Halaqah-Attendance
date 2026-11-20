@@ -11,6 +11,7 @@ Only counts are logged (how many messages, how many names per section), never na
 
 import json
 import os
+import re
 from datetime import datetime, timezone
 
 import gradio as gr
@@ -39,6 +40,30 @@ TIMEZONES = {
 runs_today = {"date": "", "count": 0}
 
 
+def offset_from_label(label: str) -> float:
+    """'Pakistan (UTC+5)' -> 5, 'India (UTC+5:30)' -> 5.5, 'Other (UTC-4)' -> -4."""
+    m = re.search(r"UTC([+-])(\d{1,2})(?::(\d{2}))?", label or "")
+    if not m:
+        return 8
+    hours = int(m.group(2)) + int(m.group(3) or 0) / 60
+    return hours if m.group(1) == "+" else -hours
+
+
+def label_for_offset(offset_hours):
+    """Pick the menu entry for the phone's own time zone (found by the browser)."""
+    try:
+        offset = round(float(offset_hours) * 4) / 4          # nearest quarter hour
+    except (TypeError, ValueError):
+        return gr.update()                                     # couldn't tell: leave the menu alone
+    for label, value in TIMEZONES.items():
+        if value == offset:
+            return gr.update(value=label)
+    sign = "+" if offset >= 0 else "-"
+    h, m = divmod(round(abs(offset) * 60), 60)
+    other = f"Other (UTC{sign}{h}" + (f":{m:02d})" if m else ")")
+    return gr.update(choices=list(TIMEZONES) + [other], value=other)
+
+
 def today_in_madinah() -> str:
     return datetime.now(MADINAH).strftime("%d/%m/%Y")
 
@@ -65,7 +90,7 @@ def make_list(upload_path, date_text, tz_label):
             return "", "Please write the class date as dd/mm/yyyy, for example 20/11/2026."
 
         runs_today["count"] += 1
-        result = make_day_list(upload_path, day, TIMEZONES.get(tz_label, 8))
+        result = make_day_list(upload_path, day, offset_from_label(tz_label))
 
         # Counts only, for the Space logs
         print(json.dumps({"ran_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -88,19 +113,26 @@ def make_list(upload_path, date_text, tz_label):
 with gr.Blocks(title="Halaqah attendance list", delete_cache=(3600, 3600)) as demo:
     gr.Markdown(
         "## Halaqah attendance list\n"
-        "Class runs **Sunday to Thursday** (Friday and Saturday are off days).\n\n"
-        "1. In WhatsApp, export the group chat **without media**.\n"
-        "2. Upload the file, check the date and your time zone, and press **Make the list**.\n"
-        "3. Copy the list and check it before posting it in the group."
+        "1. WhatsApp → the group → **Export chat → Without media** → save the file.\n"
+        "2. **Upload** it here and press **Make the list**.\n"
+        "3. **Copy** the list, check it, and paste it in the group.\n\n"
+        "Class runs Sunday to Thursday. Tip: add this page to your home screen."
     )
     upload = gr.File(label="WhatsApp export (.zip or .txt)", file_types=[".zip", ".txt"], type="filepath")
-    with gr.Row():
+    go = gr.Button("Make the list", variant="primary", size="lg")
+    status = gr.Markdown()
+    output = gr.Textbox(label="The list", lines=20, rtl=True, buttons=["copy"])
+
+    # Filled in automatically; open only to change them
+    with gr.Accordion("Date and time zone (filled in for you)", open=False):
         date_box = gr.Textbox(label="Class date (dd/mm/yyyy, Madinah)", value=next_class_date)
         tz = gr.Dropdown(label="Time zone of the phone/laptop that made the export",
                          choices=list(TIMEZONES), value=list(TIMEZONES)[0])
-    go = gr.Button("Make the list", variant="primary")
-    status = gr.Markdown()
-    output = gr.Textbox(label="The list", lines=30, rtl=True, buttons=["copy"])
+    browser_offset = gr.Number(visible=False)
+
+    # When the page opens, the browser reports its own time zone and the menu is set to match
+    demo.load(label_for_offset, inputs=browser_offset, outputs=tz,
+              js="() => [-new Date().getTimezoneOffset() / 60]", api_visibility="private")
 
     go.click(make_list, inputs=[upload, date_box, tz], outputs=[output, status],
              api_visibility="private", concurrency_limit=1)
