@@ -3,7 +3,7 @@
 > **Status: Trial, since 19 November 2026.** Used daily by one volunteer preparer, potential adoption by other volunteers in the future. The accuracy test against past lists is in progress; results below are updated as the trial runs.
 
 ## The problem
-An online Quran memorisation circle of 65 students meets on Zoom five days a week, **Sunday to Thursday** at 10:30 Madinah time (Friday and Saturday are off days). Before each class, one volunteer, chosen by rotation, builds the order of recitation by hand from the group's WhatsApp chat:
+An online Quran memorisation circle of 95 students meets on Zoom five days a week, **Sunday to Thursday** at 10:30 Madinah time (Friday and Saturday are off days). Before each class, one volunteer, chosen by rotation, builds the order of recitation by hand from the group's WhatsApp chat:
 
 - Read 30–60 attendance messages posted in a 30-minute window, written in English and Arabic, some by Urdu speakers, in many formats (an Arabic attendance card, an English card, a bare name, "X present" sent by someone else);
 - Carry forward the students from the last class who were not reached (on Sunday, from Thursday's list), and put them first;
