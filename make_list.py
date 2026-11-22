@@ -13,6 +13,7 @@ The web page (app.py) calls make_day_list() directly.
 import argparse
 import json
 import os
+import re
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
@@ -23,7 +24,7 @@ from clipboard import copy_to_clipboard
 from names import name_key
 from parse_chat import parse_export
 from posted_list import carry_forward, is_posted_list, parse_posted_list
-from reader import ReadMessage, read_messages
+from reader import ReadMessage, arabic_spellings, read_messages
 
 MADINAH = timezone(timedelta(hours=3))
 WINDOW_OPENS = "10:00"     # Madinah time; earlier messages are ignored
@@ -116,6 +117,20 @@ def make_day_list(chat_path: str | list[str], day: datetime, phone_utc: float, s
         for e in pl.did_not_recite + pl.today + pl.late + pl.listeners + pl.new_students:
             known.setdefault(name_key(e.name), e.name)
 
+    # The list is in Arabic. A carried name an admin typed in English letters gets its
+    # Arabic spelling (saved with the day's readings, so a re-run does not ask again).
+    english = [n for n in carried if re.search(r"[A-Za-z]", n)]
+    if english and not isinstance(saved, list):
+        saved = {} if saved is None else saved
+        missing = [n for n in english if f"spelling|{n}" not in saved]
+        if missing:
+            for n, ar in arabic_spellings(missing, [k for k in known.values() if not re.search(r"[A-Za-z]", k)]).items():
+                saved[f"spelling|{n}"] = ar
+        renamed = {n: saved[f"spelling|{n}"] for n in english if f"spelling|{n}" in saved}
+        carried = [renamed.get(n, n) for n in carried]
+        if renamed:
+            notes.append("Written in Arabic: " + ", ".join(f"{n} -> {ar}" for n, ar in renamed.items()))
+
     # 2. Messages in today's window (skip admins' posted lists and system lines)
     window = [
         m for m in messages
@@ -187,7 +202,7 @@ def main() -> None:
     saved = json.loads(readings_file.read_text(encoding="utf-8")) if readings_file.exists() else {}
 
     result = make_day_list(args.chat, day, args.phone_utc, saved)
-    if isinstance(saved, dict) and result.stats["sent_to_claude"]:
+    if isinstance(saved, dict) and saved:
         readings_file.parent.mkdir(exist_ok=True)
         readings_file.write_text(json.dumps(saved, ensure_ascii=False, indent=1), encoding="utf-8")
 

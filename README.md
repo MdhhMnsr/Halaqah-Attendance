@@ -22,7 +22,7 @@ A Python tool that turns a WhatsApp Desktop export into the finished list in the
 **The group's rules, as coded:**
 - Class days are Sunday to Thursday. A list for a Friday or Saturday still builds (useful for testing) but is flagged as an off day, and the web page suggests the next class day.
 - Attendance messages count from 10:00 Madinah time; after 10:30 they are Late; earlier ones are ignored.
-- A student is carried forward only once: from the last class's list, unmarked names in Today's list are carried; ✅ (recited), ❌ (called, no answer) and names an admin marked "left" are dropped; Late, Listeners and New Students are never carried.
+- A student is carried forward only once: from the last class's list, unmarked names in Today's list are carried; ✅ (recited), ❌ (called, no answer) and names an admin marked "left" are dropped; Late, Listeners and New Students are never carried. A carried name an admin typed in English letters is written in Arabic.
 - The list uses the group's own template (`list_template.txt`) with the Islamic (Umm al-Qura) date and the day name of the class.
 
 ```

@@ -87,3 +87,42 @@ def read_messages(
     usage = response.usage
     print(f"[claude] {usage.input_tokens} input + {usage.output_tokens} output tokens")
     return response.parsed_output.messages
+
+
+class Spelling(BaseModel):
+    name: str           # exactly as given
+    name_arabic: str    # the same name in Arabic script
+
+
+class SpellingResult(BaseModel):
+    names: list[Spelling]
+
+
+SPELLING_INSTRUCTIONS = """You help prepare the daily attendance list for an online Quran circle of sisters.
+The list is written in Arabic script, but an admin sometimes types a name in English letters.
+For each name given, write it in Arabic letters the way the group would write it. If the same
+person appears in KNOWN NAMES, use that spelling. Return every name exactly as given in `name`."""
+
+
+def arabic_spellings(names: list[str], known_names: list[str]) -> dict[str, str]:
+    """Arabic spelling for carried names an admin typed in English letters: {as given: Arabic}."""
+    client = anthropic.Anthropic()
+    prompt = ("NAMES:\n" + "\n".join(names)
+              + "\n\nKNOWN NAMES (spellings used in recent lists):\n" + "، ".join(known_names))
+    try:
+        response = client.messages.parse(
+            model=MODEL,
+            max_tokens=4000,
+            output_config={"effort": "low"},
+            system=SPELLING_INSTRUCTIONS,
+            messages=[{"role": "user", "content": prompt}],
+            output_format=SpellingResult,
+        )
+    except anthropic.AuthenticationError:
+        raise SystemExit("The API key was refused. It may have expired (the 'halaqah' key lasts 30 days).")
+    if response.parsed_output is None:
+        return {}   # keep the names as posted rather than stop the run
+    usage = response.usage
+    print(f"[claude] spellings: {usage.input_tokens} input + {usage.output_tokens} output tokens")
+    return {s.name: s.name_arabic.strip() for s in response.parsed_output.names
+            if s.name in names and s.name_arabic.strip()}
