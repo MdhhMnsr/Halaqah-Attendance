@@ -1,6 +1,7 @@
 """Make one day's attendance list from a WhatsApp chat export.
 
     python make_list.py path/to/chat-export.zip 18/11/2026
+    python make_list.py today.zip earlier.zip 22/11/2026   (several exports are merged)
 
 Options:
     --phone-utc 8        timezone of the phone/laptop that made the export (Malaysia = 8)
@@ -59,7 +60,7 @@ class DayResult:
     stats: dict = field(default_factory=dict)        # counts only, never names (safe to log)
 
 
-def make_day_list(chat_path: str, day: datetime, phone_utc: float, saved: dict | list | None = None) -> DayResult:
+def make_day_list(chat_path: str | list[str], day: datetime, phone_utc: float, saved: dict | list | None = None) -> DayResult:
     """Build the list for one class day.
 
     saved: Claude's earlier readings. A dict keyed by message is updated in place, so a
@@ -72,7 +73,17 @@ def make_day_list(chat_path: str, day: datetime, phone_utc: float, saved: dict |
         # Still allowed (handy for testing), but the preparer should know
         notes.append(f"NOTE: {day:%A %d/%m} is an off day (class runs Sunday to Thursday). "
                      f"The next class is {next_class_day(day):%A %d/%m}.")
-    messages = parse_export(chat_path, phone_utc)
+    # One export, or several (e.g. today's short export plus an earlier one that has the
+    # last class's ticked list). Messages in more than one file are kept once.
+    paths = [chat_path] if isinstance(chat_path, str) else list(chat_path)
+    seen, messages = set(), []
+    for path in paths:
+        for m in parse_export(path, phone_utc):
+            key = (m.time, m.sender, m.text)
+            if key not in seen:
+                seen.add(key)
+                messages.append(m)
+    messages.sort(key=lambda m: m.time)
     for m in messages:
         m.time = m.time.astimezone(MADINAH)  # do all checking in Madinah time
 
@@ -165,7 +176,7 @@ def load_env_file() -> None:
 def main() -> None:
     load_env_file()
     parser = argparse.ArgumentParser()
-    parser.add_argument("chat")
+    parser.add_argument("chat", nargs="+", help="one or more WhatsApp exports (.zip or .txt)")
     parser.add_argument("date", help="dd/mm/yyyy, the class date in Madinah")
     parser.add_argument("--phone-utc", type=float, default=8)
     parser.add_argument("--readings")
